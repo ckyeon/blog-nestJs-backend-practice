@@ -1,3 +1,6 @@
+# secret files
+/config
+
 # Created by https://www.toptal.com/developers/gitignore/api/node,webstorm,macos,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,webstorm,macos,visualstudiocode
 
