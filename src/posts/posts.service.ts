@@ -1,55 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundPostException } from './exceptions/NotFoundPostException';
-import { ulid } from 'ulid';
-
-export interface IPost {
-  id?: string;
-  category: string[];
-  tag: string[];
-  title: string;
-  body: string;
-  // comment?: {};
-}
+import { NotFoundPostException } from '../exceptions/NotFoundPostException';
+import { InjectModel } from '@nestjs/mongoose';
+import { BPost, PostDocument } from './schema/post.schema';
+import { Model } from 'mongoose';
+import { QueryPostDto } from './dto/query-post.dto';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostsService {
-  posts: IPost[] = [];
+  constructor(@InjectModel(BPost.name) private postModel: Model<PostDocument>) {}
 
-  private findIdx(id: string): number {
-    const idx = this.posts.findIndex((post: IPost) => post.id === id);
-    if (idx === -1) {
+  async findAll(query: QueryPostDto): Promise<PostDocument[]> {
+    console.log(query);
+    return this.postModel
+      .find(query)
+      .populate({ path: 'user', select: 'name' })
+      .populate({
+        path: 'comments',
+        select: 'user content',
+        populate: { path: 'user', select: 'name' }
+      })
+      .exec();
+  }
+
+  async findById(id: string): Promise<PostDocument> {
+    const post = await this.postModel.findById(id);
+    if (!post) {
       throw NotFoundPostException(id);
     }
-    return idx;
+    return post;
   }
 
-  findAll(): IPost[] {
-    return this.posts;
+  async create(dto: CreatePostDto): Promise<PostDocument> {
+    return this.postModel.create(dto);
   }
 
-  findById(id: string): IPost {
-    const idx = this.findIdx(id);
-    return this.posts[idx];
+  async update(id: string, dto: UpdatePostDto): Promise<PostDocument> {
+    const post: PostDocument = await this.findById(id);
+    await post.updateOne({ $set: dto }).exec();
+    return this.findById(id);
   }
 
-  create(post: IPost): string {
-    post.id = ulid();
-    this.posts.push(post);
-    return post.id;
+  async deleteById(id: string): Promise<PostDocument> {
+    const post: PostDocument = await this.findById(id);
+    await post.deleteOne();
+    return post;
   }
 
-  update(id: string, post: IPost): string {
-    const idx = this.findIdx(id);
-
-    delete post.id;
-    this.posts[idx] = { ...this.posts[idx], ...post };
-    return this.posts[idx].id;
-  }
-
-  deleteOne(id: string): string {
-    const idx = this.findIdx(id);
-    const exPost = this.posts[idx];
-    this.posts.splice(idx, 1);
-    return exPost.id;
+  async deleteAll(): Promise<PostDocument[]> {
+    const posts: PostDocument[] = await this.findAll({});
+    await this.postModel.deleteMany({});
+    return posts;
   }
 }
