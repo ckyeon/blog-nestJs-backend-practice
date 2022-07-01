@@ -14,7 +14,7 @@ export class JoinUserDto {
   name: string;
 
   @IsString()
-  @Matches(/^[a-zA-Z\d!@#$%&*()]+$/)
+  @Matches(/^\+?\d+$/)
   @IsNotEmpty()
   phone: string;
 }

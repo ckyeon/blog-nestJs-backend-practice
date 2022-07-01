@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TUserRole, USER_ROLES } from './enum/user-roles.enum';
+import { TUserRole, USER_ROLES } from '../../auth/enum/user-roles.enum';
 import mongoose from 'mongoose';
+import { IUser } from '../../types/user';
 
 @Schema({
   timestamps: { createdAt: 'joinedAt', updatedAt: true },
 })
-export class User {
+export class User implements IUser {
   @Prop({ type: String, unique: true, required: true })
   email: string;
 
@@ -19,7 +20,7 @@ export class User {
   role: TUserRole;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
-  auth: string;
+  auth: string | null;
 }
 
 export type UserDocument = User & mongoose.Document;

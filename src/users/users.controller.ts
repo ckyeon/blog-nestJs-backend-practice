@@ -1,21 +1,26 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
 import { JoinUserDto } from './dto/join-user.dto';
 import { UsersService } from './users.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { IAuthTokens } from './jwt/auth-tokens';
+import { IAuthTokens } from '../types/auth-tokens';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {
+  constructor(private usersService: UsersService) {
   }
 
   @Post('join')
-  join(dto: JoinUserDto): Promise<boolean> {
+  join(@Body() dto: JoinUserDto): Promise<boolean> {
     return this.usersService.join(dto);
   }
 
   @Post('login')
-  login(dto: LoginUserDto): Promise<IAuthTokens> {
+  login(@Body() dto: LoginUserDto): Promise<IAuthTokens> {
     return this.usersService.login(dto);
+  }
+
+  @Get('refresh-token')
+  refreshToken(@Headers('x-refresh-token') token: string) {
+    return this.usersService.refreshToken(token);
   }
 }

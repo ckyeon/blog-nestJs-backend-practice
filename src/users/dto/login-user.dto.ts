@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { TUserDevice } from '../schema/enum/user-devices.enum';
 
 export class LoginUserDto {
   @IsEmail()
@@ -7,4 +8,7 @@ export class LoginUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  // @IsString()
+  // device: TUserDevice;
 }
