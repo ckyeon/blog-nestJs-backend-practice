@@ -7,6 +7,7 @@ import { join } from 'path';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
+import { LoggingModule } from './logging/logging.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
     CommentsModule,
     UsersModule,
     AuthModule,
+    LoggingModule,
 
     ConfigModule.forRoot({
       envFilePath: [join(__dirname, '../config', `.${process.env.NODE_ENV || 'development'}.env`)]
