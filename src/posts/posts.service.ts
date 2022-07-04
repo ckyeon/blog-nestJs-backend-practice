@@ -12,7 +12,9 @@ export class PostsService {
   constructor(@InjectModel(BPost.name) private postModel: Model<PostDocument>) {}
 
   async findAll(query: QueryPostDto): Promise<PostDocument[]> {
-    console.log(query);
+    const { limit, orderByCreatedAt } = query;
+    delete query.limit;
+    delete query.orderByCreatedAt;
     return this.postModel
       .find(query)
       .populate({ path: 'user', select: 'name' })
@@ -21,13 +23,15 @@ export class PostsService {
         select: 'user content',
         populate: { path: 'user', select: 'name' }
       })
+      .limit(limit)
+      .sort(orderByCreatedAt)
       .exec();
   }
 
   async findById(id: string): Promise<PostDocument> {
     const post = await this.postModel.findById(id);
     if (!post) {
-      throw NotFoundPostException(id);
+      throw new NotFoundPostException(id);
     }
     return post;
   }

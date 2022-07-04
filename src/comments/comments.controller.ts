@@ -28,9 +28,8 @@ export class CommentsController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  findMyAll(@User() user: IAccessTokenPayload, @Query() query: QueryCommentDto):Promise<Comment[]> {
+  findMyAll(@User() user: IAccessTokenPayload, @Query() query: QueryCommentDto): Promise<Comment[]> {
     query.user = user._id;
-    console.log(query);
     return this.commentsService.findAll(query);
   }
 

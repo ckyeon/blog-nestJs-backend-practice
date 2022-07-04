@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class QueryPostDto {
@@ -24,4 +24,12 @@ export class QueryPostDto {
 
   @IsOptional()
   user?: string;
+
+  @IsOptional()
+  limit?: number = 5;
+
+  // @Matches(/^\{ createdAt: '(-?1)' \}$/)
+  @IsOptional()
+  @Transform(({ value }) => ({ createdAt: value }))
+  orderByCreatedAt?: string = '{ createdAt: -1 }';
 }

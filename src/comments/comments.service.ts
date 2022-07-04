@@ -22,14 +22,16 @@ export class CommentsService {
   }
 
   findAll(query: QueryCommentDto): Promise<CommentDocument[]> {
-    return this.commentModel.find(query).exec();
+    const { limit, orderByCreatedAt } = query;
+    delete query.limit;
+    delete query.orderByCreatedAt;
+    return this.commentModel.find(query).limit(limit).sort(orderByCreatedAt).exec();
   }
-
 
   async findOne(commentId: string): Promise<CommentDocument> {
     const comment: CommentDocument = await this.commentModel.findById(commentId);
     if (!comment) {
-      throw NotFoundCommentException(commentId);
+      throw new NotFoundCommentException(commentId);
     }
     return comment;
   }
@@ -38,7 +40,7 @@ export class CommentsService {
     const { post, content } = dto;
     const exPost: PostDocument = await this.postModel.findById(post);
     if (!exPost) {
-      throw NotFoundPostException(post);
+      throw new NotFoundPostException(post);
     }
     const comment = await this.commentModel.create({
       user: userId,
@@ -52,7 +54,7 @@ export class CommentsService {
   async update(commentId: string, dto: UpdateCommentDto): Promise<CommentDocument> {
     const comment: CommentDocument = await this.commentModel.findById(commentId);
     if (!comment) {
-      throw NotFoundCommentException(commentId);
+      throw new NotFoundCommentException(commentId);
     }
     await comment.updateOne({ $set: dto }).exec();
     return this.commentModel.findById(commentId);
@@ -61,7 +63,7 @@ export class CommentsService {
   async deleteOne(commentId: string): Promise<CommentDocument> {
     const comment = await this.commentModel.findById(commentId);
     if (!comment) {
-      throw NotFoundCommentException(commentId);
+      throw new NotFoundCommentException(commentId);
     }
     await comment.deleteOne();
     return comment;
