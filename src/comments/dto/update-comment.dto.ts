@@ -4,4 +4,8 @@ export class UpdateCommentDto {
   @IsString()
   @IsOptional()
   content?: string;
+
+  @IsString({ each: true })
+  @IsOptional()
+  attachments: string[];
 }

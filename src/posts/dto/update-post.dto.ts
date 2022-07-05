@@ -16,4 +16,8 @@ export class UpdatePostDto {
   @IsOptional()
   @IsString()
   body?: string;
+
+  @IsString({ each: true })
+  @IsOptional()
+  attachments?: string[];
 }

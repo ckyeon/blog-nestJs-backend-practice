@@ -41,7 +41,8 @@ export class CommentsController {
   @Post()
   @UseGuards(AuthGuard)
   create(@User() user: IAccessTokenPayload, @Body() dto: CreateCommentDto): Promise<Comment> {
-    return this.commentsService.create(user._id, dto);
+    dto.user = user._id;
+    return this.commentsService.create(dto);
   }
 
   @Put(':id')

@@ -17,6 +17,10 @@ import Config from './config';
 import { Connection } from 'mongoose';
 import adminConfig from './config/admin.config';
 import { hashSync } from 'bcrypt';
+import { MulterConfigService } from './uploads/multer-config/multer-config.service';
+import { UploadsController } from './uploads/uploads.controller';
+import { UploadsService } from './uploads/uploads.service';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -25,7 +29,7 @@ import { hashSync } from 'bcrypt';
     UsersModule,
     AuthModule,
     LoggingModule,
-
+    UploadsModule,
     Config,
 
     MongooseModule.forRootAsync({

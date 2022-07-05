@@ -8,10 +8,13 @@ export class Comment implements IComment {
   content: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
-  user: string;
+  user?: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
   post: string;
+
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], default: true, ref: 'File' })
+  attachments?: string[];
 }
 
 export type CommentDocument = Comment & mongoose.Document;

@@ -17,6 +17,10 @@ export class CreatePostDto {
   @IsString()
   body: string;
 
+  @IsString({ each: true })
   @IsOptional()
-  user?: string;
+  attachments?: string[];
+
+  @IsOptional()
+  user: string;
 }

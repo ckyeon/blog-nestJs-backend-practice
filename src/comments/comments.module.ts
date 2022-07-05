@@ -7,17 +7,20 @@ import { Comment, CommentSchema } from './schema/comment.schema';
 import { BPost, PostSchema } from '../posts/schema/post.schema';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthModule } from '../auth/auth.module';
+import { UploadsModule } from '../uploads/uploads.module';
 
 @Module({
   imports: [
     AuthModule,
     PostsModule,
+    UploadsModule,
     MongooseModule.forFeature([
       { name: Comment.name, schema: CommentSchema },
-      { name: BPost.name, schema: PostSchema },
+      { name: BPost.name, schema: PostSchema }
     ])
   ],
   providers: [CommentsService],
-  controllers: [CommentsController],
+  controllers: [CommentsController]
 })
-export class CommentsModule {}
+export class CommentsModule {
+}

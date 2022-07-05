@@ -46,9 +46,9 @@ export class PostsController {
     return this.postsService.create(dto);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdatePostDto): Promise<BPost> {
-    return this.postsService.update(id, dto);
+  @Put(':postId')
+  update(@Param('postId') postId: string, @Body() dto: UpdatePostDto): Promise<BPost> {
+    return this.postsService.update(postId, dto);
   }
 
   @Delete(':id')

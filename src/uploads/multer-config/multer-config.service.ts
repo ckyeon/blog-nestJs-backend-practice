@@ -1,4 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  MulterModuleOptions,
+  MulterOptionsFactory
+} from '@nestjs/platform-express';
+import { ConfigType } from '@nestjs/config';
+import multerConfig from '../../config/multer.config';
+import { existsSync, mkdirSync } from 'fs';
+import { diskStorage } from 'multer';
+import { v4 as uuidV4 } from 'uuid';
+import { extname } from 'path';
 
 @Injectable()
-export class MulterConfigService {}
+export class MulterConfigService implements MulterOptionsFactory {
+  constructor(@Inject(multerConfig.KEY) private config: ConfigType<typeof multerConfig>) {
+  }
+
+  createMulterOptions(): Promise<MulterModuleOptions> | MulterModuleOptions {
+    if (!existsSync(this.config.dest)) {
+      mkdirSync(this.config.dest, { recursive: true });
+    }
+
+    const storage = diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, this.config.dest);
+      },
+      filename: (req, file, cb) => {
+        const filename = `${uuidV4()}${extname(file.originalname)}`;
+        cb(null, filename);
+      }
+    });
+
+    return {
+      dest: this.config.dest,
+      storage
+    };
+  }
+}
