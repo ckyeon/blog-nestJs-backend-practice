@@ -1,13 +1,22 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  Inject,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnApplicationBootstrap
+} from '@nestjs/common';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
+import { InjectConnection, MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { LoggingModule } from './logging/logging.module';
+import Config from './config';
+import { Connection } from 'mongoose';
+import adminConfig from './config/admin.config';
+import { hashSync } from 'bcrypt';
 
 @Module({
   imports: [
@@ -17,14 +26,12 @@ import { LoggingModule } from './logging/logging.module';
     AuthModule,
     LoggingModule,
 
-    ConfigModule.forRoot({
-      envFilePath: [join(__dirname, '../config', `.${process.env.NODE_ENV || 'development'}.env`)]
-    }),
+    Config,
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI')
+        uri: configService.get('MONGO_URI')
       }),
       inject: [ConfigService]
     })
@@ -32,8 +39,36 @@ import { LoggingModule } from './logging/logging.module';
   controllers: [],
   providers: []
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnApplicationBootstrap {
+  constructor(
+    @InjectConnection() private readonly connection: Connection,
+    @Inject(adminConfig.KEY) private readonly config: ConfigType<typeof adminConfig>
+  ) {
+  }
+
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware).forRoutes('*');
+  }
+
+  onApplicationBootstrap() {
+    this.createAdmin();
+  }
+
+  private async createAdmin(): Promise<void> {
+    const { Auth, User } = this.connection.models;
+    const { email, name, phone, password } = this.config;
+    const exAdmin = await User.findOne({ email });
+
+    if (!exAdmin) {
+      const user = await User.create({ email, name, phone, role: 'admin' });
+      const auth = await Auth.create({
+        provider: 'local',
+        providerId: String(user._id),
+        password: hashSync(password, 12),
+        user: user._id
+      });
+      user.auth = auth._id;
+      await user.save();
+    }
   }
 }

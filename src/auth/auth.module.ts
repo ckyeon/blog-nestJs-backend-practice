@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Auth, AuthSchema } from './schema/auth.schema';
-import { ConfigService } from '@nestjs/config';
 import {
   RefreshToken,
   RefreshTokenSchema,
@@ -16,7 +15,7 @@ import { AuthGuard } from './guards/auth.guard';
       { name: RefreshToken.name, schema: RefreshTokenSchema },
     ]),
   ],
-  providers: [AuthService, ConfigService],
+  providers: [AuthService],
   exports: [AuthService]
 })
 export class AuthModule {

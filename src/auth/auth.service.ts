@@ -1,5 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { sign, verify } from 'jsonwebtoken';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auth, AuthDocument } from './schema/auth.schema';
@@ -9,15 +9,16 @@ import { compareSync, hashSync } from 'bcrypt';
 import { IAuth } from '../types/auth';
 import { v4 as uuidV4 } from 'uuid';
 import { RefreshToken, RefreshTokenDocument } from './schema/refresh-token.schema';
-import { IAccessTokenPayload, IAuthTokens, IRefreshTokenPayload } from '../types/auth-tokens';
+import { IAccessTokenPayload, IAuthTokens} from '../types/auth-tokens';
 import { ErrorCodes } from '../errors/error-definition';
+import authConfig from '../config/auth.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Auth.name) private readonly authModel: Model<AuthDocument>,
     @InjectModel(RefreshToken.name) private readonly refreshTokenModel: Model<RefreshTokenDocument>,
-    private readonly configurService: ConfigService
+    @Inject(authConfig.KEY) private readonly config: ConfigType<typeof authConfig>
   ) {}
 
   createAuthentication(user: IUser, password: string | Buffer): Promise<IAuth> {
@@ -34,7 +35,7 @@ export class AuthService {
   }
 
   signAccessToken(payload: IAccessTokenPayload): string {
-    return sign(payload, this.configurService.get('JWT_SECRET'), {
+    return sign(payload, this.config.jwtSecret, {
       expiresIn: '1d',
       audience: 'blog.com',
       issuer: 'blog.com'
@@ -71,7 +72,7 @@ export class AuthService {
   // 토큰 만료되었는지 체크
   verifyToken(token: string): IAccessTokenPayload {
     try {
-      const { _id, role } = verify(token, this.configurService.get('JWT_SECRET')) as IAccessTokenPayload;
+      const { _id, role } = verify(token, this.config.jwtSecret) as IAccessTokenPayload;
       return { _id, role };
     } catch (e) {
       const message =
