@@ -34,14 +34,13 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw UnAuthorizedRequestException();
+      throw new UnAuthorizedRequestException();
     }
 
     if (!roles.includes(user.role)) {
-      throw UnAuthorizedRequestException();
+      throw new UnAuthorizedRequestException();
     }
 
     return true;
   }
-
 }
