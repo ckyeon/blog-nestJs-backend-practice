@@ -1,21 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { IComment } from '../../types/comment';
+import { User } from '../../types/user';
 
-@Schema({ timestamps: true })
-export class Comment implements IComment {
+type RequiredFieldType = Pick<CommentModel, 'content' | 'post' | 'creator'>;
+type OptionalFieldType = Partial<Pick<CommentModel, 'attachments'>>;
+export type CommentFieldType = RequiredFieldType & OptionalFieldType;
+
+@Schema({ collection: 'comment', timestamps: true })
+export class CommentModel implements CommentFieldType {
   @Prop({ type: String, required: true })
   content: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
-  user?: string;
+  creator: string | User;
+
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], default: null, ref: 'File' })
+  attachments?: string[] | null;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
   post: string;
-
-  @Prop({ type: [mongoose.Schema.Types.ObjectId], default: true, ref: 'File' })
-  attachments?: string[];
 }
 
-export type CommentDocument = Comment & mongoose.Document;
-export const CommentSchema = SchemaFactory.createForClass(Comment);
+export type CommentDocument = CommentModel & mongoose.Document;
+export const CommentSchema = SchemaFactory.createForClass(CommentModel);

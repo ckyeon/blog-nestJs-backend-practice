@@ -1,11 +1,11 @@
 import { TUserRole } from '../auth/enum/user-roles.enum';
 
-export interface IAuthTokens {
+export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
 }
 
-export interface IAccessTokenPayload {
+export interface AccessTokenPayload {
   _id: string;
   role: TUserRole;
 }

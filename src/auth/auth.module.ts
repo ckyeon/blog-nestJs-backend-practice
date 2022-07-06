@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Auth, AuthSchema } from './schema/auth.schema';
+import { AuthModel, AuthSchema } from './schema/auth.schema';
 import {
-  RefreshToken,
+  RefreshTokenModel,
   RefreshTokenSchema,
 } from './schema/refresh-token.schema';
 import { AuthGuard } from './guards/auth.guard';
@@ -11,8 +11,8 @@ import { AuthGuard } from './guards/auth.guard';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Auth.name, schema: AuthSchema },
-      { name: RefreshToken.name, schema: RefreshTokenSchema },
+      { name: AuthModel.name, schema: AuthSchema },
+      { name: RefreshTokenModel.name, schema: RefreshTokenSchema },
     ]),
   ],
   providers: [AuthService],

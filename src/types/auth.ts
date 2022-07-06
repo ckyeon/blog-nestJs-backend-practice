@@ -1,9 +1,8 @@
 import { TAuthProvider } from '../auth/enum/auth-providers.enum';
+import { BaseModel } from './base';
 
-export interface IAuth {
-  _id?: string;
+export interface Auth extends BaseModel {
   provider: TAuthProvider;
   providerId: string;
   password: string;
-  user: string;
 }

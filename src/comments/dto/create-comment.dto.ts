@@ -1,16 +1,19 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsEmpty, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { CommentFieldType } from '../schema/comment.schema';
 
-export class CreateCommentDto {
+export class CreateCommentDto implements CommentFieldType {
   @IsString()
+  @IsNotEmpty()
   content: string;
-
-  @IsString()
-  post: string;
 
   @IsString({ each: true })
   @IsOptional()
-  attachments?: string[];
+  attachments: string[] | null;
 
-  @IsOptional()
-  user?: string;
+  @IsEmpty()
+  creator: string;
+
+  @IsString()
+  @IsNotEmpty()
+  post: string;
 }

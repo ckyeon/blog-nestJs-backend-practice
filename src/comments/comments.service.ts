@@ -1,20 +1,20 @@
 import { Injectable, Query } from '@nestjs/common';
 import { NotFoundCommentException } from '../exceptions/NotFoundCommentException';
 import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentDocument } from './schema/comment.schema';
+import { CommentModel, CommentDocument } from './schema/comment.schema';
 import { Model } from 'mongoose';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { QueryCommentDto } from './dto/query-comment.dto';
-import { BPost, PostDocument } from '../posts/schema/post.schema';
+import { PostModel, PostDocument } from '../posts/schema/post.schema';
 import { NotFoundPostException } from '../exceptions/NotFoundPostException';
 import { UploadsService } from '../uploads/uploads.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
-    @InjectModel(Comment.name) private readonly commentModel: Model<CommentDocument>,
-    @InjectModel(BPost.name) private readonly postModel: Model<PostDocument>,
+    @InjectModel(CommentModel.name) private readonly commentModel: Model<CommentDocument>,
+    @InjectModel(PostModel.name) private readonly postModel: Model<PostDocument>,
     private readonly uploadsService: UploadsService
   ) {}
 

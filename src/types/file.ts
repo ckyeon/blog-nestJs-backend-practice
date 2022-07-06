@@ -1,3 +1,4 @@
+import { User } from './user';
 
 export const FILE_REF_TYPE = [
   'Post',
@@ -5,14 +6,13 @@ export const FILE_REF_TYPE = [
 ] as const;
 export type FileRefType = typeof FILE_REF_TYPE[number];
 
-export interface IFile {
-  _id?: string;
+import { CreateBase } from './base';
+
+export interface File extends CreateBase {
   key: string;
   mimetype: string;
   filename: string;
   size: number;
   ref: string | null;
-  refType: FileRefType;
-  creator: string;
-  createdAt?: Date;
+  refType: FileRefType | null;
 }

@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PostFieldType } from '../schema/post.schema';
 
-export class CreatePostDto {
+export class CreatePostDto implements PostFieldType {
   @IsNotEmpty()
   @IsString()
   title: string;
@@ -19,8 +20,8 @@ export class CreatePostDto {
 
   @IsString({ each: true })
   @IsOptional()
-  attachments?: string[];
+  attachments?: string[] | null;
 
   @IsOptional()
-  user: string;
+  creator: string;
 }

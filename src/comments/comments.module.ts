@@ -3,8 +3,8 @@ import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { PostsModule } from '../posts/posts.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Comment, CommentSchema } from './schema/comment.schema';
-import { BPost, PostSchema } from '../posts/schema/post.schema';
+import { CommentModel, CommentSchema } from './schema/comment.schema';
+import { PostModel, PostSchema } from '../posts/schema/post.schema';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthModule } from '../auth/auth.module';
 import { UploadsModule } from '../uploads/uploads.module';
@@ -15,8 +15,8 @@ import { UploadsModule } from '../uploads/uploads.module';
     PostsModule,
     UploadsModule,
     MongooseModule.forFeature([
-      { name: Comment.name, schema: CommentSchema },
-      { name: BPost.name, schema: PostSchema }
+      { name: CommentModel.name, schema: CommentSchema },
+      { name: PostModel.name, schema: PostSchema }
     ])
   ],
   providers: [CommentsService],

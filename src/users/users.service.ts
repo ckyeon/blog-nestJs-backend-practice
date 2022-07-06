@@ -7,16 +7,16 @@ import {
 import { JoinUserDto } from './dto/join-user.dto';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schema/user.schema';
+import { UserModel, UserDocument } from './schema/user.schema';
 import { LoginUserDto } from './dto/login-user.dto';
-import { IAuthTokens } from '../types/auth-tokens';
 import { AuthService } from '../auth/auth.service';
 import { ErrorCodes } from '../errors/error-definition';
+import { AuthTokens } from '../types/auth-tokens';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(UserModel.name) private userModel: Model<UserDocument>,
     private authService: AuthService
   ) {
   }
@@ -35,14 +35,14 @@ export class UsersService {
     }
 
     const user = await this.userModel.create({ email, name, phone });
-    const auth = await this.authService.createAuthentication(user, password);
+    const auth = await this.authService.createAuthentication(user._id, password);
 
     user.auth = auth._id;
     await user.save();
     return true;
   }
 
-  async login(dto: LoginUserDto): Promise<IAuthTokens> {
+  async login(dto: LoginUserDto): Promise<AuthTokens> {
     const { email, password } = dto;
     const exUser = await this.userModel.findOne({ email });
 
@@ -55,12 +55,12 @@ export class UsersService {
     }
 
     const { _id, role } = exUser;
-    const accessToken = this.authService.signAccessToken({ _id, role });
+    const accessToken = await this.authService.signAccessToken({ _id, role });
     const refreshToken = await this.authService.signRefreshToken(_id);
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(refreshToken: string): Promise<IAuthTokens> {
+  async refreshToken(refreshToken: string): Promise<AuthTokens> {
     const userId = await this.authService.getUserIdByRefreshToken(refreshToken);
     const user = await this.userModel.findById(userId);
     const payload = { _id: user._id, role: user.role };

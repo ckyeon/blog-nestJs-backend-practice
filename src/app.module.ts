@@ -59,17 +59,17 @@ export class AppModule implements NestModule, OnApplicationBootstrap {
   }
 
   private async createAdmin(): Promise<void> {
-    const { Auth, User } = this.connection.models;
+    const { AuthModel, UserModel } = this.connection.models;
     const { email, name, phone, password } = this.config;
-    const exAdmin = await User.findOne({ email });
+    const exAdmin = await UserModel.findOne({ email });
 
     if (!exAdmin) {
-      const user = await User.create({ email, name, phone, role: 'admin' });
-      const auth = await Auth.create({
+      const user = await UserModel.create({ email, name, phone, role: 'admin' });
+      const auth = await AuthModel.create({
         provider: 'local',
         providerId: String(user._id),
         password: hashSync(password, 12),
-        user: user._id
+        creator: user._id
       });
       user.auth = auth._id;
       await user.save();

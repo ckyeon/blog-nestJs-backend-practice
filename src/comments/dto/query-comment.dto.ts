@@ -1,22 +1,23 @@
 import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { CommentFieldType } from '../schema/comment.schema';
 
-export class QueryCommentDto {
+export class QueryCommentDto implements CommentFieldType{
   @Transform(({ value }) => RegExp(value, 'i'))
   @IsOptional()
-  content?: string;
+  content: string;
 
   @IsOptional()
-  post?: string;
+  post: string;
 
   @IsOptional()
-  user?: string;
+  creator: string;
 
   @IsOptional()
-  limit?: number = 5;
+  limit: number = 5;
 
   // @Matches(/^\{ createdAt: '(-?1)' \}$/)
   @IsOptional()
   @Transform(({ value }) => ({ createdAt: value }))
-  orderByCreatedAt?: string = '{ createdAt: -1 }';
+  orderByCreatedAt: string = '{ createdAt: -1 }';
 }

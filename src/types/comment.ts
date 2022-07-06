@@ -1,6 +1,7 @@
-export interface IComment {
-  id?: string;
+import { BaseModel } from './base';
+
+export interface Comment extends BaseModel {
   content: string;
   post: string;
-  user?: string;
+  attachments: string[] | null;
 }

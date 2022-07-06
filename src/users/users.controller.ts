@@ -2,7 +2,7 @@ import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
 import { JoinUserDto } from './dto/join-user.dto';
 import { UsersService } from './users.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { IAuthTokens } from '../types/auth-tokens';
+import { AuthTokens } from '../types/auth-tokens';
 
 @Controller('users')
 export class UsersController {
@@ -15,7 +15,7 @@ export class UsersController {
   }
 
   @Post('login')
-  login(@Body() dto: LoginUserDto): Promise<IAuthTokens> {
+  login(@Body() dto: LoginUserDto): Promise<AuthTokens> {
     return this.usersService.login(dto);
   }
 

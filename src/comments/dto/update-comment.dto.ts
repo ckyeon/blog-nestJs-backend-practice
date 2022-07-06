@@ -1,9 +1,12 @@
 import { IsOptional, IsString } from 'class-validator';
+import { CommentFieldType } from '../schema/comment.schema';
 
-export class UpdateCommentDto {
+type FieldType = Pick<CommentFieldType, 'content' | 'attachments'>;
+
+export class UpdateCommentDto implements FieldType {
   @IsString()
   @IsOptional()
-  content?: string;
+  content: string;
 
   @IsString({ each: true })
   @IsOptional()

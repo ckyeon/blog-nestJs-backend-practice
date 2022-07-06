@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { FileRefType, IFile } from '../types/file';
+import { FileRefType } from '../types/file';
 import { InjectModel } from '@nestjs/mongoose';
-import { File, FileDocument } from './schema/file.schema';
+import { FileDocument, FileModel } from './schema/file.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class UploadsService {
-  constructor(@InjectModel(File.name) private readonly fileModel: Model<FileDocument>) {
-  }
+  constructor(@InjectModel(FileModel.name) private readonly fileModel: Model<FileDocument>) {}
 
-  async uploadFile(file: Express.Multer.File, userId: string): Promise<IFile> {
+  async uploadFile(file: Express.Multer.File, userId: string): Promise<FileDocument> {
     const fileDocument = await this.fileModel.create({
       filename: file.originalname,
       key: file.filename,
@@ -20,7 +19,7 @@ export class UploadsService {
     return fileDocument;
   }
 
-  async uploadFiles(files: Array<Express.Multer.File>, userId: string): Promise<IFile[]> {
+  async uploadFiles(files: Array<Express.Multer.File>, userId: string): Promise<FileDocument[]> {
     return Promise.all(
       files.map((file) =>
         this.fileModel.create({
@@ -46,21 +45,15 @@ export class UploadsService {
   }
 
   async updateRef(attachments: string[], ref: string, refType: FileRefType): Promise<void> {
-    const diff = (arr1, arr2) => arr1.filler((element) => !arr2.includes(element));
+    const diff = (arr1, arr2) => arr1.filter((element) => !arr2.includes(element));
 
     const exFilesId = (await this.fileModel.find({ ref: ref })).map((fileDocument) => String(fileDocument._id));
     const additions = diff(attachments || [], exFilesId);
     const deletions = diff(exFilesId, attachments || []);
 
     await Promise.all([
-      this.fileModel.updateMany(
-        { _id: { $in: additions } },
-        { $set: { ref: ref, refType: refType } }
-      ),
-      this.fileModel.updateMany(
-        { _id: { $in: deletions } },
-        { $set: { ref: null, refType: null } }
-      )
+      this.fileModel.updateMany({ _id: { $in: additions } }, { $set: { ref: ref, refType: refType } }),
+      this.fileModel.updateMany({ _id: { $in: deletions } }, { $set: { ref: null, refType: null } })
     ]);
   }
 }

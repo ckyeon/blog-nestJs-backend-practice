@@ -2,39 +2,40 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { sign, verify } from 'jsonwebtoken';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auth, AuthDocument } from './schema/auth.schema';
+import { AuthModel, AuthDocument } from './schema/auth.schema';
 import { Model } from 'mongoose';
-import { IUser } from '../types/user';
+import { User } from '../types/user';
 import { compareSync, hashSync } from 'bcrypt';
-import { IAuth } from '../types/auth';
+import { Auth } from '../types/auth';
 import { v4 as uuidV4 } from 'uuid';
-import { RefreshToken, RefreshTokenDocument } from './schema/refresh-token.schema';
-import { IAccessTokenPayload, IAuthTokens} from '../types/auth-tokens';
+import { RefreshTokenModel, RefreshTokenDocument } from './schema/refresh-token.schema';
+import { AccessTokenPayload, AuthTokens} from '../types/auth-tokens';
 import { ErrorCodes } from '../errors/error-definition';
 import authConfig from '../config/auth.config';
+import { UserModel } from '../users/schema/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Auth.name) private readonly authModel: Model<AuthDocument>,
-    @InjectModel(RefreshToken.name) private readonly refreshTokenModel: Model<RefreshTokenDocument>,
+    @InjectModel(AuthModel.name) private readonly authModel: Model<AuthDocument>,
+    @InjectModel(RefreshTokenModel.name) private readonly refreshTokenModel: Model<RefreshTokenDocument>,
     @Inject(authConfig.KEY) private readonly config: ConfigType<typeof authConfig>
   ) {}
 
-  createAuthentication(user: IUser, password: string | Buffer): Promise<IAuth> {
+  createAuthentication(userId: string, password: string | Buffer): Promise<AuthDocument> {
     return this.authModel.create({
-      providerId: String(user._id),
+      providerId: String(userId),
       password: hashSync(password, 12),
-      user: user._id
+      creator: userId
     });
   }
 
-  async authenticate(authId: string, password: string) {
+  async authenticate(authId: string, password: string): Promise<boolean> {
     const exAuth = await this.authModel.findById(authId);
     return compareSync(password, exAuth.password);
   }
 
-  signAccessToken(payload: IAccessTokenPayload): string {
+  async signAccessToken(payload: AccessTokenPayload): Promise<string> {
     return sign(payload, this.config.jwtSecret, {
       expiresIn: '1d',
       audience: 'blog.com',
@@ -44,7 +45,7 @@ export class AuthService {
 
   async signRefreshToken(userId: string): Promise<string> {
     const token = uuidV4();
-    await this.refreshTokenModel.create({ user: userId, value: token });
+    await this.refreshTokenModel.create({ creator: userId, value: token });
     return token;
   }
 
@@ -54,25 +55,25 @@ export class AuthService {
       throw new UnauthorizedException('유효한 리프레쉬 토큰이 아닙니다.');
     }
 
-    return document.user;
+    return document.creator;
   }
 
-  async refreshToken(refreshToken: string, accessTokenPayload: IAccessTokenPayload): Promise<IAuthTokens> {
+  async refreshToken(refreshToken: string, accessTokenPayload: AccessTokenPayload): Promise<AuthTokens> {
     const document = await this.refreshTokenModel.findOne({
       value: refreshToken
     });
     await document.deleteOne();
 
-    const aToken = this.signAccessToken(accessTokenPayload);
+    const aToken = await this.signAccessToken(accessTokenPayload);
     const rToken = await this.signRefreshToken(accessTokenPayload._id);
-    const tokens: IAuthTokens = { accessToken: aToken, refreshToken: rToken };
+    const tokens: AuthTokens = { accessToken: aToken, refreshToken: rToken };
     return tokens;
   }
 
   // 토큰 만료되었는지 체크
-  verifyToken(token: string): IAccessTokenPayload {
+  verifyToken(token: string): AccessTokenPayload {
     try {
-      const { _id, role } = verify(token, this.config.jwtSecret) as IAccessTokenPayload;
+      const { _id, role } = verify(token, this.config.jwtSecret) as AccessTokenPayload;
       return { _id, role };
     } catch (e) {
       const message =
