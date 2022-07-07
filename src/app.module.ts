@@ -21,6 +21,7 @@ import { MulterConfigService } from './uploads/multer-config/multer-config.servi
 import { UploadsController } from './uploads/uploads.controller';
 import { UploadsService } from './uploads/uploads.service';
 import { UploadsModule } from './uploads/uploads.module';
+import { BatchModule } from './batch/batch.module';
 
 @Module({
   imports: [
@@ -38,7 +39,9 @@ import { UploadsModule } from './uploads/uploads.module';
         uri: configService.get('MONGO_URI')
       }),
       inject: [ConfigService]
-    })
+    }),
+
+    BatchModule
   ],
   controllers: [],
   providers: []
