@@ -16,6 +16,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { User } from '../decorators/user.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AccessTokenPayload } from '../types/auth-tokens';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -28,7 +29,7 @@ export class PostsController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   findMyAll(@User() user, @Query() query: QueryPostDto): Promise<PostModel[]> {
     query.creator = user;
     return this.postsService.findAll(query);
@@ -40,7 +41,7 @@ export class PostsController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   create(@User() user: AccessTokenPayload, @Body() dto: CreatePostDto): Promise<PostModel> {
     dto.creator = user._id;
     return this.postsService.create(dto);

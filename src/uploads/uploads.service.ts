@@ -1,25 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { FileRefType } from '../types/file';
 import { InjectModel } from '@nestjs/mongoose';
 import { FileDocument, FileModel } from './schema/file.schema';
 import { Model } from 'mongoose';
+import { FileDoesNotExistException } from '../exceptions/FileDoesNotExistException';
 
 @Injectable()
 export class UploadsService {
   constructor(@InjectModel(FileModel.name) private readonly fileModel: Model<FileDocument>) {}
 
   async uploadFile(file: Express.Multer.File, userId: string): Promise<FileDocument> {
-    const fileDocument = await this.fileModel.create({
+    if (!file) {
+      throw new FileDoesNotExistException();
+    }
+
+    return await this.fileModel.create({
       filename: file.originalname,
       key: file.filename,
       mimetype: file.mimetype,
       size: file.size,
       creator: userId
     });
-    return fileDocument;
   }
 
   async uploadFiles(files: Array<Express.Multer.File>, userId: string): Promise<FileDocument[]> {
+    if (!files) {
+      throw new FileDoesNotExistException();
+    }
+
     return Promise.all(
       files.map((file) =>
         this.fileModel.create({
@@ -52,8 +60,24 @@ export class UploadsService {
     const deletions = diff(exFilesId, attachments || []);
 
     await Promise.all([
-      this.fileModel.updateMany({ _id: { $in: additions } }, { $set: { ref: ref, refType: refType } }),
-      this.fileModel.updateMany({ _id: { $in: deletions } }, { $set: { ref: null, refType: null } })
+      this.fileModel.updateMany(
+        { _id: { $in: additions } },
+        {
+          $set: {
+            ref: ref,
+            refType: refType
+          }
+        }
+      ),
+      this.fileModel.updateMany(
+        { _id: { $in: deletions } },
+        {
+          $set: {
+            ref: null,
+            refType: null
+          }
+        }
+      )
     ]);
   }
 }

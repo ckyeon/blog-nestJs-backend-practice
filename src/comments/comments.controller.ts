@@ -15,6 +15,7 @@ import { QueryCommentDto } from './dto/query-comment.dto';
 import { User } from '../decorators/user.decorator';
 import { AccessTokenPayload } from '../types/auth-tokens';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -27,7 +28,7 @@ export class CommentsController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   findMyAll(@User() user: AccessTokenPayload, @Query() query: QueryCommentDto): Promise<CommentModel[]> {
     query.creator = user._id;
     return this.commentsService.findAll(query);
@@ -39,7 +40,7 @@ export class CommentsController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   create(@User() user: AccessTokenPayload, @Body() dto: CreateCommentDto): Promise<CommentModel> {
     dto.creator = user._id;
     return this.commentsService.create(dto);

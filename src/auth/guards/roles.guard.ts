@@ -1,29 +1,16 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TUserRole } from '../enum/user-roles.enum';
 import { Reflector } from '@nestjs/core';
-import { ErrorCodes } from '../../errors/error-definition';
-import {
-  UnAuthorizedRequestException
-} from '../../exceptions/UnAuthorizedRequestException';
+import { UnAuthorizedRequestException } from '../../exceptions/UnAuthorizedRequestException';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {
-  }
+  constructor(private reflector: Reflector) {}
 
-  canActivate(context: ExecutionContext
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     // 컨트롤러 @Roles() 데코레이터에서 지정한 값이 들어옴
-    const roles = this.reflector.get<TUserRole[]>(
-      'roles',
-      context.getHandler()
-    );
+    const roles = this.reflector.get<TUserRole[]>('roles', context.getHandler());
 
     if (!roles) {
       return true;

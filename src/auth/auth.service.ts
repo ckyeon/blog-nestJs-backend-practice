@@ -1,31 +1,69 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { sign, verify } from 'jsonwebtoken';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { AuthModel, AuthDocument } from './schema/auth.schema';
-import { Model } from 'mongoose';
+import { Connection, Model } from 'mongoose';
 import { User } from '../types/user';
 import { compareSync, hashSync } from 'bcrypt';
 import { Auth } from '../types/auth';
 import { v4 as uuidV4 } from 'uuid';
-import { RefreshTokenModel, RefreshTokenDocument } from './schema/refresh-token.schema';
-import { AccessTokenPayload, AuthTokens} from '../types/auth-tokens';
+import {
+  RefreshTokenModel,
+  RefreshTokenDocument
+} from './schema/refresh-token.schema';
+import { AccessTokenPayload, AuthTokens } from '../types/auth-tokens';
 import { ErrorCodes } from '../errors/error-definition';
 import authConfig from '../config/auth.config';
 import { UserModel } from '../users/schema/user.schema';
+import { LoginUserDto } from '../users/dto/login-user.dto';
+import {
+  NotFoundUserException
+} from '../exceptions/NotFoundUserException';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectConnection() private readonly connection: Connection,
     @InjectModel(AuthModel.name) private readonly authModel: Model<AuthDocument>,
     @InjectModel(RefreshTokenModel.name) private readonly refreshTokenModel: Model<RefreshTokenDocument>,
-    @Inject(authConfig.KEY) private readonly config: ConfigType<typeof authConfig>
-  ) {}
+    @Inject(authConfig.KEY) private readonly config: ConfigType<typeof authConfig>,
+    private readonly jwtService: JwtService
+  ) {
+  }
 
-  createAuthentication(userId: string, password: string | Buffer): Promise<AuthDocument> {
+  async login(user: AccessTokenPayload): Promise<AuthTokens> {
+    return {
+      accessToken: await this.signAccessToken(user),
+      refreshToken: await this.signRefreshToken(user._id)
+    };
+  }
+
+  async validateUser(loginUser: LoginUserDto): Promise<AccessTokenPayload> {
+    const { UserModel, AuthModel } = this.connection.models;
+    const { email, password } = loginUser;
+
+    const exUser = await UserModel.findOne({ email });
+    if (!exUser) {
+      throw new NotFoundUserException(email);
+    }
+
+    const exAuth: AuthDocument = await AuthModel.findById(exUser.auth);
+    if (!exAuth.validatePassword(password)) {
+      throw new UnauthorizedException(ErrorCodes.INVALID_PASSWORD);
+    }
+
+    return {
+      _id: exUser._id,
+      role: exUser.role
+    };
+  }
+
+  createAuthentication(userId: string, password: string): Promise<AuthDocument> {
     return this.authModel.create({
       providerId: String(userId),
-      password: hashSync(password, 12),
+      password: password,
       creator: userId
     });
   }
@@ -36,8 +74,7 @@ export class AuthService {
   }
 
   async signAccessToken(payload: AccessTokenPayload): Promise<string> {
-    return sign(payload, this.config.jwtSecret, {
-      expiresIn: '1d',
+    return this.jwtService.sign(payload, {
       audience: 'blog.com',
       issuer: 'blog.com'
     });
@@ -73,7 +110,10 @@ export class AuthService {
   // 토큰 만료되었는지 체크
   verifyToken(token: string): AccessTokenPayload {
     try {
-      const { _id, role } = verify(token, this.config.jwtSecret) as AccessTokenPayload;
+      const {
+        _id,
+        role
+      } = verify(token, this.config.jwtSecret) as AccessTokenPayload;
       return { _id, role };
     } catch (e) {
       const message =

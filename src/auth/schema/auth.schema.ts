@@ -5,6 +5,7 @@ import {
   TAuthProvider
 } from '../enum/auth-providers.enum';
 import { Auth } from '../../types/auth';
+import { compareSync, hashSync } from 'bcrypt';
 
 type RequiredFieldType = Pick<Auth, 'provider' | 'providerId' | 'password'>;
 type OptionalFieldType = Pick<Auth, 'creator'>;
@@ -20,11 +21,22 @@ export class AuthModel implements AuthFieldType {
   providerId: string;
 
   @Prop({ type: String, required: true })
-  password: string;
+  hashedPassword: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
   creator: string;
+
+  password: string;
+  validatePassword: (password: string) => boolean;
 }
 
 export type AuthDocument = AuthModel & mongoose.Document;
 export const AuthSchema = SchemaFactory.createForClass(AuthModel);
+
+AuthSchema.virtual('password').set(function (password: string) {
+  this.hashedPassword = hashSync(password, 12);
+});
+
+AuthSchema.methods.validatePassword = function (password: string): boolean {
+  return compareSync(password, this.hashedPassword);
+};

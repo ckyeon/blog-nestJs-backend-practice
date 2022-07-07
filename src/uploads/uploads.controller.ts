@@ -16,6 +16,7 @@ import { AccessTokenPayload } from '../types/auth-tokens';
 import { User } from '../decorators/user.decorator';
 import { File } from '../types/File';
 import { FileDocument } from './schema/file.schema';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('uploads')
 export class UploadsController {
@@ -24,14 +25,14 @@ export class UploadsController {
 
   @Post('/single')
   @UseInterceptors(FileInterceptor('file'))
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   uploadFile(@User() user: AccessTokenPayload, @UploadedFile() file: Express.Multer.File): Promise<FileDocument> {
     return this.uploadsService.uploadFile(file, user._id);
   }
 
   @Post('/array')
   @UseInterceptors(AnyFilesInterceptor())
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   uploadFiles(
     @User() user: AccessTokenPayload,
     @UploadedFiles() files: Array<Express.Multer.File>
