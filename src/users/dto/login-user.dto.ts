@@ -1,8 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
-import { UserFieldType } from '../schema/user.schema';
-import { AuthFieldType } from '../../auth/schema/auth.schema';
+import { User } from '../../types/user';
+import { Auth } from '../../types/auth';
 
-type FieldType = Pick<UserFieldType & AuthFieldType, 'email' | 'password'>;
+type FieldType = Pick<User & Auth, 'email' | 'password'>;
 
 export class LoginUserDto implements FieldType {
   @IsEmail()
