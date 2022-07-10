@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  mongoReplica:
+    image: mongo
+    container_name: 'todo-mongo-replica'
+    ports:
+      - '27017:27017'
+    volumes:
+      - ${MONGO_DATA_PATH}:/data/db
+      - ${MONGO_SCRIPT_PATH}:/mongo
+    command: [ '--replSet', 'rs0' ]
+
+  mongoInit:
+    image: mongo
+    container_name: 'todo-mongo-init'
+    restart: 'no'
+    volumes:
+      - ${MONGO_SCRIPT_PATH}:/mongo
+    command: [ '/bin/bash', '-c', '/mongo/init/replset.setup.sh' ]
+    links:
+      - mongoReplica
+    depends_on:
+      - mongo
