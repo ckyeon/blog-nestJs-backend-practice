@@ -1,23 +1,35 @@
-import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { CommentFieldType } from '../schema/comment.schema';
+import { Comment } from '../../types/comment';
 
-export class QueryCommentDto implements CommentFieldType{
+type FieldType = Partial<Pick<Comment, 'content' | 'post'>>;
+
+export class QueryCommentDto implements FieldType {
   @Transform(({ value }) => RegExp(value, 'i'))
   @IsOptional()
-  content: string;
+  content?: string;
 
+  @IsString()
   @IsOptional()
-  post: string;
+  post?: string;
 
+  @IsString()
   @IsOptional()
-  creator: string;
+  creator?: string;
 
+  @IsNumber()
   @IsOptional()
-  limit: number = 5;
+  limit?: number = 5;
 
   // @Matches(/^\{ createdAt: '(-?1)' \}$/)
-  @IsOptional()
   @Transform(({ value }) => ({ createdAt: value }))
-  orderByCreatedAt: string = '{ createdAt: -1 }';
+  @IsOptional()
+  orderByCreatedAt? = '{ createdAt: -1 }';
 }

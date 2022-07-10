@@ -1,27 +1,26 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { CreatePostDto } from './create-post.dto';
-import { PostFieldType } from '../schema/post.schema';
+import { IsOptional, IsString } from 'class-validator';
+import { Post } from '../../types/post';
 
-type FieldType = Pick<PostFieldType, 'title' | 'categories' | 'tags' | 'body' | 'attachments'>;
+type FieldType = Partial<Pick<Post, 'title' | 'categories' | 'tags' | 'body' | 'attachments'>>;
 
 export class UpdatePostDto implements FieldType {
-  @IsOptional()
   @IsString()
-  title: string;
-
   @IsOptional()
+  title?: string;
+
   @IsString({ each: true })
-  categories: string[];
-
   @IsOptional()
+  categories?: string[];
+
   @IsString({ each: true })
-  tags: string[];
-
   @IsOptional()
+  tags?: string[];
+
   @IsString()
-  body: string;
+  @IsOptional()
+  body?: string;
 
   @IsString({ each: true })
   @IsOptional()
-  attachments: string[] | null;
+  attachments?: string[] | null;
 }

@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PostFieldType } from '../schema/post.schema';
+import { Post } from '../../types/post';
 
-type FieldType = Partial<Pick<PostFieldType, 'title' | 'tags' | 'categories' | 'creator'>>;
+type FieldType = Partial<Pick<Post, 'title' | 'tags' | 'categories' | 'creator'>>;
 
 export class QueryPostDto implements FieldType {
   @Transform(({ value }) => RegExp(value))
@@ -17,23 +17,25 @@ export class QueryPostDto implements FieldType {
   @Transform(({ value }) => ({
     $all: value.split(',').map((tag) => RegExp(tag, 'i'))
   }))
-  @IsOptional()
+  @IsString({ each: true })
   tags?: string[];
 
   @Transform(({ value }) => ({
     $all: value.split(',').map((tag) => RegExp(tag, 'i'))
   }))
-  @IsOptional()
+  @IsString({ each: true })
   categories?: string[];
 
+  @IsNumber()
   @IsOptional()
   creator?: string;
 
+  @IsNumber()
   @IsOptional()
   limit? = 5;
 
   // @Matches(/^\{ createdAt: '(-?1)' \}$/)
-  @IsOptional()
   @Transform(({ value }) => ({ createdAt: value }))
+  @IsOptional()
   orderByCreatedAt? = '{ createdAt: -1 }';
 }

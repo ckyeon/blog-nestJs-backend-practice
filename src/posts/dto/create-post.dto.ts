@@ -1,7 +1,10 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PostFieldType } from '../schema/post.schema';
+import { Post } from '../../types/post';
 
-export class CreatePostDto implements PostFieldType {
+type FieldType = Pick<Post, 'title' | 'categories' | 'tags' | 'body' | 'creator'> & Partial<Pick<Post, 'attachments'>>;
+
+export class CreatePostDto implements FieldType {
   @IsNotEmpty()
   @IsString()
   title: string;
