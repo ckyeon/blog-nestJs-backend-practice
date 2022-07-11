@@ -3,7 +3,7 @@ version: '3'
 services:
   mongoReplica:
     image: mongo
-    container_name: 'todo-mongo-replica'
+    container_name: '${APP_NAME}-mongo-replica'
     ports:
       - '27017:27017'
     volumes:
@@ -13,7 +13,7 @@ services:
 
   mongoInit:
     image: mongo
-    container_name: 'todo-mongo-init'
+    container_name: '${APP_NAME}-mongo-init'
     restart: 'no'
     volumes:
       - ${MONGO_SCRIPT_PATH}:/mongo
